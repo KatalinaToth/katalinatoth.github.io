@@ -1,0 +1,33 @@
+<!doctype html>
+{{ "<!-- Built with Hugo Blox. https://hugoblox.com -->" | safeHTML }}
+{{ printf "<!-- Last Published: %s -->" (now | time.Format ":date_long") | safeHTML }}
+{{- $language_code := site.LanguageCode | default "en-us" -}}
+<html lang="{{ $language_code }}" dir="ltr"
+      data-wc-theme-default="{{ (lower site.Params.appearance.mode) | default "system" }}">
+  {{ partial "site_head" . }}
+  <body class="dark:bg-hb-dark dark:text-white page-wrapper" id="top">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-white focus:text-primary-600 focus:underline">Skip to main content</a>
+
+    <div id="page-bg"></div>
+    <div class="page-header {{ if site.Params.header.navbar.fixed }}sticky top-0 z-30{{ end }}">
+      {{ $show_navbar := ((site.Params.header.navbar.enable | default true) | and (ne .Params.header.navbar.enable false)) | or .Params.header.navbar.enable }}
+      {{ if $show_navbar }}
+        {{- $header_config := .Params.header.navbar | default site.Params.header.navbar | default dict -}}
+        {{- $block_name := "navbar" -}}
+        {{ $block_path := printf "components/headers/%s.html" $block_name }}
+        {{ if templates.Exists (printf "_partials/%s" $block_path) }}
+          {{ partial $block_path . }}
+        {{ end }}
+      {{ end }}
+    </div>
+
+    <main id="main-content" tabindex="-1" class="page-body{{ if ne .Type "landing" }} my-10{{ end }}">
+      {{ block "main" . }}{{ end }}
+    </main>
+
+    <div class="page-footer">
+      {{ partial "site_footer" . }}
+    </div>
+
+  </body>
+</html>

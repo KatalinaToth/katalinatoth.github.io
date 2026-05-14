@@ -1,0 +1,240 @@
+{{ define "main" }}
+{{ $wl := site.Data.writings_legacy_map | default (dict "entries" (dict)) }}
+{{ $wlEntries := $wl.entries | default dict }}
+
+<div class="mx-auto max-w-6xl px-4 sm:px-6" id="pub-list-app">
+
+  <header class="mb-6">
+    <h1 class="text-3xl font-bold tracking-tight text-gray-900">Publications</h1>
+  </header>
+
+  <nav class="sticky top-0 z-20 bg-white border-b border-gray-200 mb-6 -mx-4 px-4 sm:-mx-6 sm:px-6" style="box-shadow:0 4px 6px -4px rgba(0,0,0,0.08);">
+    <ul class="flex gap-1 overflow-x-auto py-2 text-sm font-medium" id="pub-tabs" role="tablist">
+      <li><button class="pub-tab px-3 py-1.5 rounded-md whitespace-nowrap transition" data-tab="all" role="tab" aria-selected="true">All</button></li>
+      <li><button class="pub-tab px-3 py-1.5 rounded-md whitespace-nowrap transition" data-tab="journal" role="tab">Journal Articles</button></li>
+      <li><button class="pub-tab px-3 py-1.5 rounded-md whitespace-nowrap transition" data-tab="review" role="tab">Under Review</button></li>
+      <li><button class="pub-tab px-3 py-1.5 rounded-md whitespace-nowrap transition" data-tab="working" role="tab">Working Papers</button></li>
+      <li><button class="pub-tab px-3 py-1.5 rounded-md whitespace-nowrap transition" data-tab="chapter" role="tab">Book Chapters</button></li>
+    </ul>
+  </nav>
+
+  <div class="flex flex-col lg:flex-row gap-8">
+
+    <aside class="lg:w-64 shrink-0 space-y-5">
+      <div>
+        <label for="pub-search" class="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Search</label>
+        <input type="search" id="pub-search" placeholder="Title, author, venue…"
+          class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500">
+      </div>
+      <div>
+        <label for="pub-sort" class="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Sort by</label>
+        <select id="pub-sort" class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-primary-500 focus:ring-1 focus:ring-primary-500">
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+          <option value="title-az">Title A–Z</option>
+          <option value="title-za">Title Z–A</option>
+        </select>
+      </div>
+      <div>
+        <span class="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Year</span>
+        <div id="pub-year-filters" class="max-h-52 overflow-y-auto space-y-1 text-sm"></div>
+      </div>
+      <button id="pub-reset" class="text-sm text-primary-600 hover:underline">Reset filters</button>
+    </aside>
+
+    <div class="flex-1 min-w-0">
+      <p class="text-sm text-gray-500 mb-4" id="pub-count"></p>
+
+      <div id="pub-entries">
+        {{ range .Pages.ByDate.Reverse }}
+        {{ $slug := "" }}{{ with .File }}{{ $slug = path.Base (path.Dir .Path) }}{{ end }}
+        {{ $legacyTab := "" }}
+        {{ with index $wlEntries $slug }}{{ $legacyTab = .tab }}{{ end }}
+        <div class="pub-entry border-b border-gray-200 py-3"
+             data-year="{{ .Date.Format "2006" }}"
+             data-type="{{ delimit (.Params.publication_types | default (slice "report")) "," }}"
+             data-tab="{{ $legacyTab }}"
+             data-title="{{ .Title }}"
+             data-authors="{{ delimit (.Params.authors | default slice) ", " }}"
+             data-venue="{{ .Params.publication | default "" }}"
+             data-abstract="{{ .Params.abstract | default "" }}">
+
+          <div class="text-sm leading-relaxed">
+            <span class="text-gray-600">
+              {{- range $i, $a := (.Params.authors | default slice) -}}
+                {{- if $i }}, {{ end -}}
+                {{- $a -}}
+              {{- end -}}
+            </span>
+            {{ with .Date }}
+              <span class="text-gray-500">({{ .Format "2006" }}).</span>
+            {{ end }}
+            <a href="{{ .RelPermalink }}" class="font-medium text-primary-700 hover:underline">{{ .Title }}</a>{{ with .Params.publication }}.
+              <span class="italic text-gray-600">{{ . }}</span>{{ end }}.
+          </div>
+
+          <div class="mt-1.5 flex flex-wrap items-center gap-3 text-xs">
+            {{ with .Params.abstract }}
+            <button class="pub-toggle-abstract text-primary-600 hover:underline cursor-pointer" type="button">view summary</button>
+            {{ end }}
+            {{ range .Params.links }}
+              {{ if .url }}
+              <a href="{{ .url }}" target="_blank" rel="noopener" class="text-primary-600 hover:underline">{{ .name | default "Link" }}</a>
+              {{ end }}
+            {{ end }}
+          </div>
+
+          {{ with .Params.abstract }}
+          <div class="pub-abstract hidden mt-3 pl-4 border-l-2 border-gray-200 text-sm text-gray-700 leading-relaxed">
+            {{ . }}
+          </div>
+          {{ end }}
+        </div>
+        {{ end }}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  var entries = [];
+  document.querySelectorAll('.pub-entry').forEach(function(el) {
+    entries.push({
+      el: el,
+      year: el.dataset.year || '',
+      types: (el.dataset.type || '').split(','),
+      tab: el.dataset.tab || '',
+      title: (el.dataset.title || '').toLowerCase(),
+      authors: (el.dataset.authors || '').toLowerCase(),
+      venue: (el.dataset.venue || '').toLowerCase(),
+      abstract: (el.dataset.abstract || '').toLowerCase()
+    });
+  });
+
+  var tabBtns = document.querySelectorAll('.pub-tab');
+  var searchInput = document.getElementById('pub-search');
+  var sortSelect = document.getElementById('pub-sort');
+  var yearContainer = document.getElementById('pub-year-filters');
+  var countEl = document.getElementById('pub-count');
+  var resetBtn = document.getElementById('pub-reset');
+  var activeTab = 'all';
+
+  var years = {};
+  entries.forEach(function(e) { if (e.year) years[e.year] = true; });
+  Object.keys(years).sort().reverse().forEach(function(y) {
+    var label = document.createElement('label');
+    label.className = 'flex items-center gap-2 cursor-pointer';
+    label.innerHTML = '<input type="checkbox" class="pub-year-cb rounded border-gray-300 text-primary-600 focus:ring-primary-500" value="' + y + '" checked> ' + y;
+    yearContainer.appendChild(label);
+  });
+
+  function matchesTab(entry, tab) {
+    if (tab === 'all') return true;
+    if (entry.tab === tab) return true;
+    if (tab === 'journal' && entry.types.indexOf('journal_article') !== -1 && !entry.tab) return true;
+    if (tab === 'chapter' && (entry.types.indexOf('book_chapter') !== -1 || entry.types.indexOf('chapter') !== -1) && !entry.tab) return true;
+    if (tab === 'review' && entry.types.indexOf('report') !== -1 && !entry.tab) {
+      var v = (entry.el.dataset.venue || '').toLowerCase();
+      return v.indexOf('under review') !== -1 || v.indexOf('under contract') !== -1 || v.indexOf('conditionally') !== -1;
+    }
+    if (tab === 'working' && entry.types.indexOf('report') !== -1 && !entry.tab) {
+      var v2 = (entry.el.dataset.venue || '').toLowerCase();
+      return v2.indexOf('working paper') !== -1 || v2 === '';
+    }
+    return false;
+  }
+
+  tabBtns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      activeTab = btn.dataset.tab;
+      window.location.hash = activeTab;
+      updateTabs();
+      applyFilters();
+    });
+  });
+
+  function updateTabs() {
+    tabBtns.forEach(function(b) {
+      var isActive = b.dataset.tab === activeTab;
+      b.setAttribute('aria-selected', isActive);
+      b.className = 'pub-tab px-3 py-1.5 rounded-md whitespace-nowrap transition ' +
+        (isActive ? 'bg-primary-600 text-white' : 'text-gray-600 hover:bg-gray-100');
+    });
+  }
+
+  function readHash() {
+    var h = (window.location.hash || '#all').replace('#', '');
+    if (['all','journal','review','working','chapter'].indexOf(h) !== -1) activeTab = h;
+    else activeTab = 'all';
+    updateTabs();
+    applyFilters();
+  }
+  window.addEventListener('hashchange', readHash);
+
+  function applyFilters() {
+    var query = (searchInput.value || '').toLowerCase().trim();
+    var checkedYears = {};
+    document.querySelectorAll('.pub-year-cb').forEach(function(cb) {
+      if (cb.checked) checkedYears[cb.value] = true;
+    });
+    var sortMode = sortSelect.value;
+    var visible = [];
+
+    entries.forEach(function(e) {
+      var show = true;
+      if (!matchesTab(e, activeTab)) show = false;
+      if (show && e.year && !checkedYears[e.year]) show = false;
+      if (show && query) {
+        var haystack = e.title + ' ' + e.authors + ' ' + e.venue + ' ' + e.abstract;
+        if (haystack.indexOf(query) === -1) show = false;
+      }
+      if (show) visible.push(e);
+      e.el.style.display = show ? '' : 'none';
+    });
+
+    visible.sort(function(a, b) {
+      switch (sortMode) {
+        case 'oldest': return (a.year || '0').localeCompare(b.year || '0');
+        case 'title-az': return a.title.localeCompare(b.title);
+        case 'title-za': return b.title.localeCompare(a.title);
+        default: return (b.year || '0').localeCompare(a.year || '0');
+      }
+    });
+
+    var parent = document.getElementById('pub-entries');
+    visible.forEach(function(e) { parent.appendChild(e.el); });
+    countEl.textContent = visible.length + ' of ' + entries.length + ' results';
+  }
+
+  searchInput.addEventListener('input', applyFilters);
+  sortSelect.addEventListener('change', applyFilters);
+  yearContainer.addEventListener('change', applyFilters);
+
+  resetBtn.addEventListener('click', function() {
+    searchInput.value = '';
+    sortSelect.value = 'newest';
+    document.querySelectorAll('.pub-year-cb').forEach(function(cb) { cb.checked = true; });
+    activeTab = 'all';
+    window.location.hash = 'all';
+    updateTabs();
+    applyFilters();
+  });
+
+  document.getElementById('pub-entries').addEventListener('click', function(e) {
+    if (e.target.classList.contains('pub-toggle-abstract')) {
+      var entry = e.target.closest('.pub-entry');
+      var abs = entry.querySelector('.pub-abstract');
+      if (abs) {
+        var hidden = abs.classList.toggle('hidden');
+        e.target.textContent = hidden ? 'view summary' : 'hide summary';
+      }
+    }
+  });
+
+  readHash();
+})();
+</script>
+{{ end }}

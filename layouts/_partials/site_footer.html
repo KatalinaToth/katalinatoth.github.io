@@ -1,0 +1,34 @@
+{{/*
+  Site footer — dark background, navigation links, copyright, credit.
+*/}}
+<footer style="background:#222; color:#e5e5e5;" class="mt-16">
+  <div class="mx-auto max-w-6xl px-6 py-12">
+    <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-8">
+
+      {{/* Navigation links */}}
+      <div>
+        <p class="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-3">Navigate</p>
+        <ul class="space-y-2">
+          {{ range site.Menus.main }}
+          <li>
+            <a href="{{ .URL | relURL }}" class="text-sm hover:text-white transition" style="color:#e5e5e5;">
+              {{ .Name }}
+            </a>
+          </li>
+          {{ end }}
+        </ul>
+      </div>
+
+      {{/* Copyright + credit */}}
+      <div class="text-sm text-right md:text-right space-y-2" style="color:#a3a3a3;">
+        <p>&copy; {{ now.Year }} Libby Jenke</p>
+        <p>
+          Built with
+          <a href="https://gohugo.io/" target="_blank" rel="noopener" class="hover:text-white transition" style="color:#e5e5e5;">Hugo</a>
+          +
+          <a href="https://hugoblox.com/" target="_blank" rel="noopener" class="hover:text-white transition" style="color:#e5e5e5;">Hugo Blox</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</footer>

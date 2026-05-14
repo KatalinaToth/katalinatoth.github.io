@@ -1,0 +1,957 @@
+/* University of Houston scarlet-red accent */
+:root {
+  --lj-accent-600: #C8102E;
+  --lj-accent-700: #A30D25;
+  --lj-accent-500: #D9243C;
+  --lj-link:       #337ab7;
+  --lj-link-hover: #23527c;
+  --lj-border:     #e2e8f0;
+  --lj-text:       #1a1a1a;
+  --lj-text-muted: #555;
+  --lj-bg:         #fff;
+  --lj-bg-muted:   #fafafa;
+}
+
+/* =========================================================================
+   ACCESSIBILITY (WCAG 2.1 AA) UTILITIES
+   ========================================================================= */
+
+.lj-skip-link {
+  position: absolute;
+  left: 0;
+  top: 0;
+  padding: 8px 16px;
+  background: #C8102E;
+  color: #fff !important;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  border-radius: 0 0 6px 0;
+  z-index: 1000;
+  transform: translateY(-200%);
+  transition: transform 0.15s ease-in-out;
+}
+.lj-skip-link:focus,
+.lj-skip-link:focus-visible {
+  transform: translateY(0);
+  outline: 3px solid #ffd166;
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+main#main-content:focus,
+main#main-content:focus-visible {
+  outline: none;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible,
+[role="button"]:focus-visible,
+[tabindex]:not([tabindex="-1"]):focus-visible {
+  outline: 3px solid #ffd166;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+@media (min-width: 1024px) {
+  .nav-dropdown:focus-within > .nav-dropdown-list,
+  .nav-dropdown:hover > .nav-dropdown-list {
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+}
+
+/* =========================================================================
+   FORCED LIGHT MODE
+   ========================================================================= */
+
+html.dark,
+html.dark body,
+html.dark .page-wrapper {
+  background-color: #fff !important;
+  color: #1a1a1a !important;
+  color-scheme: light !important;
+}
+html.dark .dark\:bg-hb-dark { background-color: #fff !important; }
+html.dark .dark\:bg-zinc-900\/90 { background-color: rgba(255,255,255,0.95) !important; }
+html.dark .dark\:bg-gray-700 { background-color: #f3f4f6 !important; }
+html.dark .dark\:bg-neutral-700 { background-color: #f5f5f5 !important; }
+html.dark .dark\:text-white { color: #1a1a1a !important; }
+html.dark .dark\:text-neutral-300 { color: #555 !important; }
+html.dark .dark\:text-slate-100 { color: #1e293b !important; }
+html.dark .dark\:border-zinc-700\/50,
+html.dark .dark\:border-zinc-800,
+html.dark .dark\:border-neutral-600,
+html.dark .dark\:border-slate-700 { border-color: #e2e8f0 !important; }
+html.dark .dark\:prose-invert {
+  --tw-prose-body: #374151 !important;
+  --tw-prose-headings: #111827 !important;
+}
+
+.theme-toggle,
+button[accesskey="t"] {
+  display: none !important;
+}
+
+/* =========================================================================
+   TYPOGRAPHY
+   ========================================================================= */
+
+body {
+  line-height: 1.55;
+  color: var(--lj-text);
+}
+
+.prose p {
+  margin-bottom: 1.25em;
+}
+
+.prose a:not(.lj-link-primary) {
+  color: var(--lj-link);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.prose a:not(.lj-link-primary):hover,
+.prose a:not(.lj-link-primary):focus {
+  color: var(--lj-link-hover);
+}
+
+/* =========================================================================
+   DENSE CITATION LIST STYLES
+   ========================================================================= */
+
+.view-citation {
+  display: block !important;
+}
+
+.pub-list-item {
+  display: block !important;
+  width: 100% !important;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--lj-border);
+}
+.dark .pub-list-item {
+  border-bottom: 1px solid #334155;
+}
+
+.lj-citation-line {
+  font-size: 0.95rem;
+  color: var(--lj-text-muted);
+  line-height: 1.5;
+  margin-top: 0.5rem;
+}
+.lj-citation-line em { color: #444; }
+
+.lj-citation-line--stacked {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+.lj-citation-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+.lj-citation-text {
+  min-width: 0;
+  width: 100%;
+}
+
+/* =========================================================================
+   PUBLICATION LIST PAGE — TABS, SIDEBAR, DENSE ROWS
+   ========================================================================= */
+
+.lj-pub-tabs {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: #fff;
+  padding: 0.5rem 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  border-bottom: 1px solid var(--lj-border);
+}
+
+.lj-tab {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--lj-text-muted);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.lj-tab:hover:not(.lj-tab-active),
+.lj-tab:focus-visible:not(.lj-tab-active) {
+  background-color: #f1f5f9;
+  color: #1e3a5f;
+}
+.lj-tab-active {
+  border-bottom: 2px solid #C8102E;
+  color: #C8102E;
+  font-weight: 600;
+}
+
+.lj-pub-sidebar {
+  border: 1px solid var(--lj-border);
+  border-radius: 8px;
+  padding: 1.25rem;
+  background: var(--lj-bg-muted);
+  position: sticky;
+  top: 4rem;
+}
+.lj-pub-sidebar h3 {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #888;
+  margin: 0 0 0.75rem;
+}
+.lj-pub-sidebar label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+  padding: 0.25rem 0;
+  cursor: pointer;
+}
+
+.lj-result-count {
+  font-size: 0.85rem;
+  color: #888;
+  padding: 0.5rem 0;
+}
+.lj-result-count strong {
+  color: var(--lj-text);
+  font-weight: 600;
+}
+
+.lj-pub-row {
+  font-size: 0.9rem;
+  line-height: 1.4;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--lj-border);
+}
+.lj-pub-row:last-child {
+  border-bottom: none;
+}
+.lj-pub-row .lj-pub-title {
+  font-weight: 600;
+  color: var(--lj-text);
+}
+.lj-pub-row .lj-pub-meta {
+  font-size: 0.88rem;
+  color: var(--lj-text-muted);
+  margin-top: 0.2rem;
+}
+
+.lj-pub-summary {
+  margin-top: 0.4rem;
+}
+.lj-pub-summary > summary {
+  font-size: 0.85rem;
+  color: var(--lj-link);
+  cursor: pointer;
+  list-style: none;
+  transition: color 0.15s ease;
+}
+.lj-pub-summary > summary::-webkit-details-marker { display: none; }
+.lj-pub-summary > summary:hover { color: var(--lj-link-hover); }
+.lj-pub-summary > summary::before {
+  content: "▸ ";
+  font-size: 0.75rem;
+}
+.lj-pub-summary[open] > summary::before {
+  content: "▾ ";
+}
+.lj-pub-summary .lj-pub-abstract {
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: #444;
+  padding: 0.5rem 0;
+}
+
+/* =========================================================================
+   PUBLICATION DETAIL PAGE
+   ========================================================================= */
+
+.lj-pub-body {
+  margin: 1.25rem 0;
+  overflow: hidden;
+}
+.lj-pub-image {
+  float: left;
+  margin: 0 1.5rem 1rem 0;
+  max-width: 340px;
+}
+.lj-pub-image img {
+  width: 100%;
+  max-height: 500px;
+  height: auto;
+  object-fit: contain;
+  border-radius: 4px;
+  border: 1px solid var(--lj-border);
+  display: block;
+}
+.lj-pub-text {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: #444;
+}
+.lj-pub-text p {
+  margin: 0.6em 0;
+}
+
+.lj-pub-text a,
+.lj-pub-text a:visited,
+.lj-see-also a,
+.lj-see-also a:visited {
+  color: var(--lj-link);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.lj-pub-text a:hover,
+.lj-pub-text a:focus,
+.lj-see-also a:hover,
+.lj-see-also a:focus {
+  color: var(--lj-link-hover);
+  text-decoration: underline;
+}
+
+/* Prose / markdown bodies in main */
+main#main-content .prose a:not(.lj-link-primary) {
+  color: var(--lj-link);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+main#main-content .prose a:not(.lj-link-primary):hover,
+main#main-content .prose a:not(.lj-link-primary):focus {
+  color: var(--lj-link-hover);
+}
+
+@media (max-width: 640px) {
+  .lj-pub-image {
+    float: none;
+    max-width: 100%;
+    margin: 0 0 1rem 0;
+  }
+}
+
+/* =========================================================================
+   BUTTON STYLES
+   ========================================================================= */
+
+.lj-link-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  min-height: 0;
+  line-height: 1.25;
+  background: #337ab7;
+  color: #fff !important;
+  border-radius: 999px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  margin-right: 6px;
+}
+.lj-link-primary:hover,
+.lj-link-primary:focus-visible {
+  background: #285f8f;
+  text-decoration: none;
+  color: #fff !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(40, 95, 143, 0.25);
+}
+.lj-link-primary svg {
+  stroke: #fff;
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+a.lj-link-secondary,
+button.lj-link-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  margin: 0;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0;
+  box-shadow: none !important;
+  font-size: inherit;
+  font-weight: 500;
+  color: #337ab7 !important;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  line-height: 1.25;
+}
+a.lj-link-secondary:hover,
+button.lj-link-secondary:hover {
+  text-decoration: underline;
+  background: transparent !important;
+  color: #23527c !important;
+}
+.lj-link-secondary svg {
+  opacity: 0.85;
+}
+
+button.lj-cite-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: #333 !important;
+  background: #f8f9fa !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 6px;
+  cursor: pointer;
+  line-height: 1.25;
+  transition: background-color 0.15s ease, border-color 0.15s ease,
+              color 0.15s ease, transform 0.15s ease;
+}
+button.lj-cite-button:hover,
+button.lj-cite-button:focus-visible {
+  background: #eef2f6 !important;
+  border-color: #9ca3af !important;
+  transform: translateY(-1px);
+}
+
+/* =========================================================================
+   SEE ALSO SECTION
+   ========================================================================= */
+
+.gk-see-also {
+  margin: 1.5rem 0;
+  padding: 1rem 1.25rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid var(--lj-border);
+}
+.gk-see-also h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 0 0.75rem;
+  color: #333;
+}
+.gk-see-also ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.gk-see-also li {
+  padding: 4px 0;
+}
+.gk-see-also a {
+  color: var(--lj-link);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-size: 0.9rem;
+}
+.gk-see-also a:hover { text-decoration: underline; }
+.gk-see-also .gk-see-year { color: #888; font-size: 0.8rem; margin-left: 4px; }
+.gk-see-also .gk-see-kind {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-variant: small-caps;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--lj-text-muted);
+  background: #e2e8f0;
+  padding: 1px 6px;
+  border-radius: 3px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+/* =========================================================================
+   CARD HOVER EFFECTS
+   ========================================================================= */
+
+.lj-card,
+.lj-pub-card,
+.lj-pub-card-featured,
+.lj-ra-card {
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.lj-card:hover,
+.lj-pub-card:hover,
+.lj-pub-card-featured:hover,
+.lj-ra-card:hover,
+.lj-card:focus-within,
+.lj-pub-card:focus-within,
+.lj-pub-card-featured:focus-within,
+.lj-ra-card:focus-within {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+  border-color: #cbd5e1;
+}
+
+.lj-abstract-toggle,
+.lj-cite-btn,
+.lj-download-bib {
+  transition: background-color 0.15s ease, border-color 0.15s ease,
+              color 0.15s ease, transform 0.15s ease;
+}
+.lj-abstract-toggle:hover,
+.lj-cite-btn:hover,
+.lj-download-bib:hover,
+.lj-abstract-toggle:focus-visible,
+.lj-cite-btn:focus-visible,
+.lj-download-bib:focus-visible {
+  background-color: #eef2f6;
+  border-color: #9ca3af;
+  color: #1e3a5f;
+  transform: translateY(-1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lj-card,
+  .lj-pub-card,
+  .lj-pub-card-featured,
+  .lj-ra-card,
+  .lj-abstract-toggle,
+  .lj-cite-btn,
+  .lj-cite-button,
+  .lj-download-bib,
+  .lj-link-primary {
+    transition-property: background-color, color, border-color, box-shadow,
+                         text-decoration-color;
+  }
+  .lj-card:hover,
+  .lj-pub-card:hover,
+  .lj-pub-card-featured:hover,
+  .lj-ra-card:hover,
+  .lj-abstract-toggle:hover,
+  .lj-cite-btn:hover,
+  .lj-cite-button:hover,
+  .lj-download-bib:hover,
+  .lj-link-primary:hover {
+    transform: none;
+  }
+}
+
+/* =========================================================================
+   HOMEPAGE HERO
+   ========================================================================= */
+
+.lj-hero {
+  display: flex;
+  align-items: flex-start;
+  gap: 2.5rem;
+  padding: 3rem 0;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.lj-hero-image {
+  flex-shrink: 0;
+  max-width: 300px;
+}
+.lj-hero-image img {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  display: block;
+}
+.lj-hero-text {
+  flex: 1;
+  min-width: 0;
+}
+.lj-hero-text h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--lj-text);
+  margin: 0 0 0.5rem;
+  line-height: 1.2;
+}
+.lj-hero-text .lj-hero-subtitle {
+  font-size: 1.1rem;
+  color: var(--lj-text-muted);
+  margin-bottom: 1rem;
+}
+.lj-hero-text .lj-hero-affiliation {
+  font-size: 0.95rem;
+  color: #C8102E;
+  font-weight: 600;
+}
+.lj-hero-text p {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #444;
+  margin: 0.75em 0;
+}
+.lj-hero-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 20px;
+  background: #C8102E;
+  color: #fff !important;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: background 0.2s ease, transform 0.18s ease, box-shadow 0.18s ease;
+  margin-top: 0.75rem;
+}
+.lj-hero-cta:hover,
+.lj-hero-cta:focus-visible {
+  background: #A30D25;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(200, 16, 46, 0.3);
+}
+
+@media (max-width: 768px) {
+  .lj-hero {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1.5rem;
+    padding: 2rem 1rem;
+  }
+  .lj-hero-image {
+    max-width: 220px;
+  }
+}
+
+/* =========================================================================
+   RESEARCH AREAS — GRID OF CARDS
+   ========================================================================= */
+
+.lj-ra-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.25rem;
+  margin: 1.5rem 0;
+}
+.lj-ra-card {
+  border: 1px solid var(--lj-border);
+  border-radius: 8px;
+  padding: 1.25rem;
+  background: #fff;
+}
+.lj-ra-card h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+  color: var(--lj-text);
+}
+.lj-ra-card p {
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: #444;
+  margin: 0;
+}
+.lj-ra-card a {
+  color: var(--lj-link);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-size: 0.88rem;
+}
+.lj-ra-card a:hover { color: var(--lj-link-hover); }
+
+.lj-ra-abstract-details > summary {
+  transition: background-color 0.15s ease, color 0.15s ease;
+  border-radius: 4px;
+}
+.lj-ra-abstract-details > summary:hover {
+  background-color: rgba(200, 16, 46, 0.06);
+  color: #A30D25;
+}
+.lj-ra-abstract-body {
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: #444;
+  padding: 0.5rem 0;
+}
+.lj-ra-abstract-body a,
+.lj-ra-abstract-body a:visited {
+  color: var(--lj-link);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.lj-ra-abstract-body a:hover,
+.lj-ra-abstract-body a:focus {
+  color: var(--lj-link-hover);
+}
+
+/* =========================================================================
+   NAVBAR / BRAND WORDMARK
+   ========================================================================= */
+
+.lj-navbar-brand {
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lj-text) !important;
+  text-decoration: none;
+}
+.lj-navbar-brand:hover {
+  color: #C8102E !important;
+  text-decoration: none;
+}
+
+.lj-hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+.lj-hamburger span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--lj-text);
+  border-radius: 1px;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+@media (max-width: 768px) {
+  .lj-hamburger {
+    display: flex;
+  }
+  .lj-nav-links {
+    display: none;
+    flex-direction: column;
+    width: 100%;
+    padding: 0.5rem 0;
+  }
+  .lj-nav-links.lj-nav-open {
+    display: flex;
+  }
+}
+
+/* =========================================================================
+   BREADCRUMBS
+   ========================================================================= */
+
+.lj-breadcrumbs,
+nav[aria-label="Breadcrumb"] {
+  font-size: 0.82rem;
+  color: #888;
+  margin-bottom: 1rem;
+}
+.lj-breadcrumbs a,
+nav[aria-label="Breadcrumb"] a {
+  color: #888;
+  text-decoration: none;
+  transition: color 0.15s ease, text-decoration-color 0.15s ease;
+}
+.lj-breadcrumbs a:hover,
+nav[aria-label="Breadcrumb"] a:hover,
+.lj-breadcrumbs a:focus-visible,
+nav[aria-label="Breadcrumb"] a:focus-visible {
+  color: var(--lj-link) !important;
+  text-decoration: underline !important;
+}
+.lj-breadcrumbs .lj-bc-sep {
+  margin: 0 0.35rem;
+  color: #bbb;
+}
+
+/* =========================================================================
+   SEARCH MODAL
+   ========================================================================= */
+
+.lj-search-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 100;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 12vh;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+.lj-search-overlay.lj-search-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.lj-search-modal {
+  background: #fff;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 600px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+.lj-search-input-wrap {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--lj-border);
+}
+.lj-search-input-wrap svg {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  color: #888;
+  margin-right: 0.75rem;
+}
+.lj-search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 1rem;
+  color: var(--lj-text);
+  background: transparent;
+}
+.lj-search-input::placeholder {
+  color: #aaa;
+}
+.lj-search-results {
+  max-height: 50vh;
+  overflow-y: auto;
+  padding: 0.5rem 0;
+}
+.lj-search-result {
+  display: block;
+  padding: 0.6rem 1rem;
+  text-decoration: none;
+  color: var(--lj-text);
+  font-size: 0.9rem;
+  transition: background 0.12s ease;
+}
+.lj-search-result:hover,
+.lj-search-result:focus {
+  background: #f1f5f9;
+}
+.lj-search-result .lj-sr-title {
+  font-weight: 600;
+}
+.lj-search-result .lj-sr-section {
+  font-size: 0.8rem;
+  color: #888;
+  margin-top: 0.15rem;
+}
+.lj-search-empty {
+  padding: 1.5rem 1rem;
+  text-align: center;
+  color: #888;
+  font-size: 0.9rem;
+}
+
+/* =========================================================================
+   FOOTER
+   ========================================================================= */
+
+.lj-footer {
+  background: #222;
+  color: #e5e5e5;
+  padding: 2rem 0;
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+.lj-footer a {
+  color: #ccc;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.15s ease;
+}
+.lj-footer a:hover {
+  color: #fff;
+}
+.lj-footer .lj-footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+.lj-footer .lj-footer-copy {
+  color: #999;
+  font-size: 0.8rem;
+}
+
+footer .powered-by {
+  opacity: 0.5;
+  font-size: 0.75rem;
+}
+
+/* =========================================================================
+   LAYOUT — MAX WIDTH & RESPONSIVE
+   ========================================================================= */
+
+.lj-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.lj-pub-layout {
+  display: grid;
+  grid-template-columns: 1fr 260px;
+  gap: 2rem;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .lj-pub-layout {
+    grid-template-columns: 1fr;
+  }
+  .lj-pub-sidebar {
+    position: static;
+  }
+  .lj-ra-grid {
+    grid-template-columns: 1fr;
+  }
+  .lj-footer .lj-footer-inner {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+@media (max-width: 640px) {
+  .lj-pub-layout {
+    grid-template-columns: 1fr;
+  }
+  .lj-pub-sidebar {
+    position: static;
+    width: 100%;
+  }
+  .lj-pub-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .lj-hero-text h1 {
+    font-size: 1.6rem;
+  }
+}

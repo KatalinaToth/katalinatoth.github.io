@@ -1,0 +1,25 @@
+{{ define "main" }}
+<article class="mx-auto" style="max-width: 760px;">
+  <header class="mb-6">
+    <h1 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
+      {{ .Title }}
+    </h1>
+    {{ with .Params.subtitle }}
+      <p class="mt-2 text-lg text-gray-500 dark:text-gray-400">{{ . }}</p>
+    {{ end }}
+  </header>
+
+  {{ $featured := partial "functions/get_featured_image" . }}
+  {{ with $featured }}
+    <figure class="mb-8">
+      <img src="{{ .RelPermalink }}" alt="{{ $.Title }}" class="w-full rounded-lg shadow-sm" loading="lazy">
+    </figure>
+  {{ end }}
+
+  <div class="prose prose-lg dark:prose-invert max-w-none">
+    {{ .Content }}
+  </div>
+
+  {{ partial "related_finder.html" . }}
+</article>
+{{ end }}

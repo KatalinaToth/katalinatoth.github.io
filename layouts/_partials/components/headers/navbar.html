@@ -1,0 +1,80 @@
+{{/*
+  Custom navbar for Libby Jenke's academic site.
+  Checkbox-based hamburger for mobile, flex row for desktop,
+  optional search button that opens Alpine.js search store.
+*/}}
+{{- $menu := site.Menus.main -}}
+<nav class="w-full bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 px-4 sm:px-6 lg:px-8" aria-label="Main navigation">
+  <div class="mx-auto max-w-6xl flex items-center justify-between h-16">
+
+    {{/* ── Brand / wordmark ── */}}
+    <a href="{{ "" | relURL }}" class="inline-block select-none"
+       style="font-size:1.35rem; letter-spacing:0.04em; color:#1e293b; font-weight:700; text-decoration:none; line-height:1;">
+      LIBBY JENKE
+    </a>
+
+    {{/* ── Desktop menu ── */}}
+    <div class="hidden md:flex items-center gap-1">
+      {{ range $menu }}
+        <a href="{{ .URL | relURL }}"
+           class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition
+             {{ if $.IsMenuCurrent "main" . }} text-primary-600 dark:text-primary-400{{ end }}">
+          {{ .Name }}
+        </a>
+      {{ end }}
+
+      {{/* Search button (desktop) */}}
+      {{ if site.Params.header.navbar.show_search }}
+      <button
+        type="button"
+        class="ml-2 p-2 rounded-md text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+        aria-label="Search (Cmd-K)"
+        onclick="window.dispatchEvent(new CustomEvent('open-search'))"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+        </svg>
+      </button>
+      {{ end }}
+    </div>
+
+    {{/* ── Mobile hamburger (pure CSS checkbox) ── */}}
+    <div class="md:hidden flex items-center gap-2">
+      {{ if site.Params.header.navbar.show_search }}
+      <button
+        type="button"
+        class="p-2 rounded-md text-gray-500 hover:text-primary-600 hover:bg-gray-50 transition"
+        aria-label="Search"
+        onclick="window.dispatchEvent(new CustomEvent('open-search'))"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+        </svg>
+      </button>
+      {{ end }}
+
+      <label for="nav-toggle" class="p-2 rounded-md text-gray-500 hover:text-primary-600 hover:bg-gray-50 cursor-pointer transition" aria-label="Toggle menu">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
+        </svg>
+      </label>
+    </div>
+  </div>
+
+  {{/* Hidden checkbox that drives mobile menu visibility */}}
+  <input type="checkbox" id="nav-toggle" class="hidden peer" aria-hidden="true">
+
+  {{/* Mobile dropdown panel */}}
+  <div class="hidden peer-checked:block md:hidden border-t border-gray-200 dark:border-gray-700 pb-4">
+    {{ range $menu }}
+      <a href="{{ .URL | relURL }}"
+         class="block px-4 py-2.5 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-primary-600 transition
+           {{ if $.IsMenuCurrent "main" . }} text-primary-600{{ end }}">
+        {{ .Name }}
+      </a>
+    {{ end }}
+  </div>
+</nav>
+
+{{/* Include search modal partial */}}
+{{ partial "components/search-modal.html" . }}

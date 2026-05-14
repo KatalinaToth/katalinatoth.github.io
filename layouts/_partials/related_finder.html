@@ -1,0 +1,415 @@
+{{/*
+  related_finder.html — auto-discovers related content across publication,
+  talk, software, and dataverse sections for a given page.
+
+  Discovery rules (no scripts required; runs at build time):
+    1. Explicit overrides in front matter are ALWAYS honored first:
+         related_talks:     [slug, slug, ...]    # from publications
+         related_papers:    [slug, slug, ...]    # any section
+         related_software:  [slug, slug, ...]    # any section
+         related_datasets:  [slug, slug, ...]    # any section
+         related_paper:     slug                 # legacy singular
+         related_dataset:   slug                 # legacy singular
+    1b. see_also: list of { url, title? } and/or { section, slug, title? }
+         for curated links not covered by related_*.
+    1c. dataverse_url (+ dataverse_name): surfaced as a [Dataset] row in
+         See Also (in addition to the green callout on publication pages).
+    2. Category siblings: every entry that shares the same research_areas
+       subcategory as the current page (from data/research_areas.json) is
+       added next, so any paper or talk listed under, e.g. "Teaching and
+       Administration > Publications" automatically links to its peers.
+    3. After explicit matches and category siblings, we score every other
+       page by:
+         - Title-token overlap (stop words stripped)  -> big weight
+         - Shared authors                             -> medium weight
+         - Shared tags / keywords                     -> medium weight
+       Any page scoring above threshold is included as backfill.
+    4. Sections shown: talk, software, publication (incl. datasets).
+    5. Results are capped (default 8) and sorted by score, then year desc.
+
+  Usage:
+    {{ partial "related_finder.html" . }}
+*/}}
+
+{{ $page := . }}
+{{ $curSlug := "" }}{{ with $page.File }}{{ $curSlug = path.Base (path.Dir .Path) }}{{ end }}
+{{ $curSection := $page.Section }}
+
+{{/* ---------- helpers: normalize strings ---------- */}}
+{{ $stop := slice "a" "an" "and" "the" "of" "for" "in" "on" "to" "with" "by" "at" "as" "is" "are" "be" "or" "from" "into" "using" "via" "new" "not" "no" "it" "its" "we" "our" "their" "you" "your" "this" "that" "these" "those" "but" "if" "than" "then" "so" "can" "will" "would" "could" "should" "may" "might" "also" "more" "most" "some" "all" "any" "each" "every" "who" "whom" "which" "what" "when" "where" "why" "how" "about" "between" "among" "through" "over" "under" "after" "before" "upon" "across" "per" "vs" "de" "la" "les" "et" "du" }}
+
+{{/* Build comparable token set for current page */}}
+{{ $curTitleTokens := slice }}
+{{ range split (lower ($page.Title | default "")) " " }}
+  {{ $tok := replaceRE `[^a-z0-9]+` "" . }}
+  {{ if and (gt (len $tok) 2) (not (in $stop $tok)) }}
+    {{ $curTitleTokens = $curTitleTokens | append $tok }}
+  {{ end }}
+{{ end }}
+{{ $curAuthors := slice }}
+{{ range ($page.Params.authors | default slice) }}
+  {{ $curAuthors = $curAuthors | append (lower (string .)) }}
+{{ end }}
+{{/* Last-name tokens for fuzzy author match ("Jonathan Katz" vs "Jonathan N. Katz") */}}
+{{ $curAuthorSurnames := slice }}
+{{ range ($page.Params.authors | default slice) }}
+  {{ $parts := split (lower (trim (string .) " ")) " " }}
+  {{ if gt (len $parts) 0 }}
+    {{ $ln := index $parts (sub (len $parts) 1) }}
+    {{ $ln = replaceRE `\.` "" $ln }}
+    {{ $ln = replaceRE `[^a-z0-9]+` "" $ln }}
+    {{ if gt (len $ln) 1 }}
+      {{ $curAuthorSurnames = $curAuthorSurnames | append $ln }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+{{ $curTags := slice }}
+{{ range ($page.Params.tags | default slice) }}{{ $curTags = $curTags | append (lower (string .)) }}{{ end }}
+{{ range ($page.Params.keywords | default slice) }}{{ $curTags = $curTags | append (lower (string .)) }}{{ end }}
+
+{{/* ---------- collect explicit overrides ---------- */}}
+{{ $picked := slice }}
+{{ $pickedSlugs := slice }}
+{{ $pickedExternalUrls := slice }}
+
+{{ $explicitLists := slice
+   (dict "field" "related_papers"   "section" "publication")
+   (dict "field" "related_talks"    "section" "talk")
+   (dict "field" "related_software" "section" "software")
+   (dict "field" "related_datasets" "section" "publication") }}
+
+{{ range $explicitLists }}
+  {{ $sect := .section }}
+  {{ $slugs := index $page.Params .field | default slice }}
+  {{ range $slugs }}
+    {{ $p := site.GetPage (printf "/%s/%s" $sect .) }}
+    {{ with $p }}
+      {{ if not (in $pickedSlugs .RelPermalink) }}
+        {{ $picked = $picked | append (dict "page" . "score" 9999) }}
+        {{ $pickedSlugs = $pickedSlugs | append .RelPermalink }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+
+{{/* Legacy singular fields */}}
+{{ range slice "related_paper" "related_dataset" }}
+  {{ $slug := index $page.Params . }}
+  {{ with $slug }}
+    {{ $p := site.GetPage (printf "/publication/%s" .) }}
+    {{ with $p }}
+      {{ if not (in $pickedSlugs .RelPermalink) }}
+        {{ $picked = $picked | append (dict "page" . "score" 9999) }}
+        {{ $pickedSlugs = $pickedSlugs | append .RelPermalink }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+
+{{/* see_also front matter: internal section/slug or external URL */}}
+{{ range ($page.Params.see_also | default slice) }}
+  {{ if .url }}
+    {{ $tu := .url }}
+    {{ $t := .title | default $tu }}
+    {{ if not (in $pickedExternalUrls $tu) }}
+      {{ $picked = $picked | append (dict "extUrl" $tu "extTitle" $t "extKind" "Link" "score" 9997) }}
+      {{ $pickedExternalUrls = $pickedExternalUrls | append $tu }}
+    {{ end }}
+  {{ else if and .section .slug }}
+    {{ $p := site.GetPage (printf "/%s/%s" .section .slug) }}
+    {{ with $p }}
+      {{ if not (in $pickedSlugs .RelPermalink) }}
+        {{ $picked = $picked | append (dict "page" . "score" 9998) }}
+        {{ $pickedSlugs = $pickedSlugs | append .RelPermalink }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+
+{{/* Harvard Dataverse replication bundle (abstract tail stripped in abstract_for_display when dataverse_url is set) */}}
+{{ with $page.Params.dataverse_url }}
+  {{ $dvu := . }}
+  {{ if not (in $pickedExternalUrls $dvu) }}
+    {{ $dn := $page.Params.dataverse_name | default "Replication data (Harvard Dataverse)" }}
+    {{ $picked = $picked | append (dict "extUrl" $dvu "extTitle" $dn "extKind" "Data" "score" 9996) }}
+    {{ $pickedExternalUrls = $pickedExternalUrls | append $dvu }}
+  {{ end }}
+{{ end }}
+
+{{/* ---------- auto-signal: inline Dataverse URL in the abstract ----------
+
+     Many older publications only carry a Harvard Dataverse pointer in the
+     prose of the abstract (a sentence like "Replication data at the Harvard
+     Dataverse: https://…"). abstract_for_display.html strips the sentence
+     for on-screen rendering, but the raw URL still belongs in See Also so
+     readers can actually find the data. We only do this when the page
+     didn't already declare `dataverse_url` in front matter — otherwise we
+     risk double-rendering the same link.                                   */}}
+{{ if not $page.Params.dataverse_url }}
+  {{ $rawAbs := $page.Params.abstract | default "" }}
+  {{ if $rawAbs }}
+    {{ $found := findRE `https?://(?:dx\.)?(?:doi\.org/10\.7910/DVN/[A-Za-z0-9]+|dataverse\.harvard\.edu/[^\s"'<)]+)` $rawAbs 1 }}
+    {{ range $found }}
+      {{ $dvu := . }}
+      {{ if not (in $pickedExternalUrls $dvu) }}
+        {{ $picked = $picked | append (dict "extUrl" $dvu "extTitle" "Replication data (Harvard Dataverse)" "extKind" "Data" "score" 9995) }}
+        {{ $pickedExternalUrls = $pickedExternalUrls | append $dvu }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+
+{{/* ---------- auto-signal: response/comment/rejoinder recognition --------
+
+     When the current page's title starts with words like "Response to",
+     "Reply to", "Comment on", "Rejoinder", etc., try to identify the
+     original paper by title-keyword overlap and pin it at the top of See
+     Also. The overlap score is already computed below for every page — we
+     just boost the winner so it sorts above tag/author backfill.
+
+     We only look at publication-section pages so a response-paper doesn't
+     accidentally pin one of its own talk versions.                         */}}
+{{ $titleLower := lower ($page.Title | default "") }}
+{{ $isResponse := or (or (or (or (or
+      (strings.Contains $titleLower "response to")
+      (strings.Contains $titleLower "reply to"))
+      (strings.Contains $titleLower "comment on"))
+      (strings.Contains $titleLower "rejoinder"))
+      (strings.HasPrefix $titleLower "comment:"))
+      (strings.HasPrefix $titleLower "reply:") }}
+{{ if $isResponse }}
+  {{ $bestScore := 0 }}
+  {{ $bestPage := false }}
+  {{ range (where site.RegularPages "Section" "publication") }}
+    {{ if ne .RelPermalink $page.RelPermalink }}
+      {{ $otherLower := lower (.Title | default "") }}
+      {{/* Skip other response-papers — we want the subject paper, not a
+           sibling reply. */}}
+      {{ $isOtherResponse := or (or (or
+            (strings.Contains $otherLower "response to")
+            (strings.Contains $otherLower "reply to"))
+            (strings.Contains $otherLower "comment on"))
+            (strings.Contains $otherLower "rejoinder") }}
+      {{ if not $isOtherResponse }}
+        {{ $otherTokens := slice }}
+        {{ range split $otherLower " " }}
+          {{ $t := replaceRE `[^a-z0-9]+` "" . }}
+          {{ if and (gt (len $t) 2) (not (in $stop $t)) }}
+            {{ $otherTokens = $otherTokens | append $t }}
+          {{ end }}
+        {{ end }}
+        {{ $overlap := 0 }}
+        {{ range $otherTokens }}
+          {{ if in $curTitleTokens . }}{{ $overlap = add $overlap 1 }}{{ end }}
+        {{ end }}
+        {{ if gt $overlap $bestScore }}
+          {{ $bestScore = $overlap }}
+          {{ $bestPage = . }}
+        {{ end }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+  {{ if and $bestPage (ge $bestScore 2) }}
+    {{ if not (in $pickedSlugs $bestPage.RelPermalink) }}
+      {{ $picked = $picked | append (dict "page" $bestPage "score" 9994) }}
+      {{ $pickedSlugs = $pickedSlugs | append $bestPage.RelPermalink }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+
+{{/* ---------- auto-signal: prior / new edition of a book ----------------
+
+     Books on this site use a naming convention like:
+       "Designing Social Inquiry: Scientific Inference in Qualitative Research"
+       "Designing Social Inquiry: Scientific Inference in Qualitative Research,
+          New Edition"
+     i.e. the new edition's title = old title + ", New Edition" / ", 2nd
+     Edition" / ", 3rd Edition" / etc. We find edition-siblings by prefix
+     match (stripping the edition suffix from either side) and cross-link
+     both directions.                                                       */}}
+{{ $isBookPage := in ($page.Params.publication_types | default slice) "book" }}
+{{ if $isBookPage }}
+  {{ $myTitle := $page.Title | default "" }}
+  {{ $myBase := replaceRE `(?i),\s*(new edition|[0-9]+(st|nd|rd|th) edition|revised edition|expanded edition)\s*$` "" $myTitle }}
+  {{ $myBase = trim $myBase " " }}
+  {{ range (where site.RegularPages "Section" "publication") }}
+    {{ if ne .RelPermalink $page.RelPermalink }}
+      {{ $otherIsBook := in (.Params.publication_types | default slice) "book" }}
+      {{ if $otherIsBook }}
+        {{ $otherTitle := .Title | default "" }}
+        {{ $otherBase := replaceRE `(?i),\s*(new edition|[0-9]+(st|nd|rd|th) edition|revised edition|expanded edition)\s*$` "" $otherTitle }}
+        {{ $otherBase = trim $otherBase " " }}
+        {{ if and (gt (len $myBase) 10) (eq (lower $myBase) (lower $otherBase)) }}
+          {{ if not (in $pickedSlugs .RelPermalink) }}
+            {{ $picked = $picked | append (dict "page" . "score" 9993) }}
+            {{ $pickedSlugs = $pickedSlugs | append .RelPermalink }}
+          {{ end }}
+        {{ end }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+
+{{/* ---------- category siblings from research_areas.json ---------- */}}
+{{/* If the current page is listed under one or more research_areas
+     subcategories, surface every other entry from the same subcategory
+     (papers, talks, datasets — all rendered through the standard
+     section/slug lookup below). This is the "easy way" to make sure that
+     every paper points readers to its siblings, without anyone having
+     to maintain explicit related_* lists. */}}
+{{ $raData := site.Data.research_areas }}
+{{ if and $raData $curSlug }}
+  {{/* Match the current page to research_areas entries by slug. We accept
+       a match on either the same section (publication/talk) or a different
+       one (e.g. a software-section page whose slug also appears in the
+       publication list), so that software project pages also surface
+       category siblings. */}}
+  {{ range $areaKey := slice "methods" "applications" }}
+    {{ $areas := index $raData $areaKey | default slice }}
+    {{ range $area := $areas }}
+      {{ range $sub := ($area.subcategories | default slice) }}
+        {{ $papers := $sub.papers | default slice }}
+        {{ $hasMe := false }}
+        {{ range $papers }}
+          {{ if eq .slug $curSlug }}
+            {{ $hasMe = true }}
+          {{ end }}
+        {{ end }}
+        {{ if $hasMe }}
+          {{ range $papers }}
+            {{ $sect := .section }}
+            {{ $slug := .slug }}
+            {{ if ne $slug $curSlug }}
+              {{ $p := site.GetPage (printf "/%s/%s" $sect $slug) }}
+              {{ with $p }}
+                {{ if not (in $pickedSlugs .RelPermalink) }}
+                  {{ $picked = $picked | append (dict "page" . "score" 8000) }}
+                  {{ $pickedSlugs = $pickedSlugs | append .RelPermalink }}
+                {{ end }}
+              {{ end }}
+            {{ end }}
+          {{ end }}
+        {{ end }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+
+{{/* ---------- automatic scoring pass ---------- */}}
+{{/* If category siblings already filled the See Also block, use the
+     usual high-confidence threshold; otherwise relax it so that pages
+     not yet listed in research_areas.json still get a useful list of
+     siblings based on title/author/tag overlap. */}}
+{{ $threshold := 4 }}
+{{ if lt (len $picked) 3 }}{{ $threshold = 2 }}{{ end }}
+{{ $candidates := slice }}
+{{ range (where site.RegularPages "Section" "in" (slice "publication" "talk" "software")) }}
+  {{ $same := and (eq .RelPermalink $page.RelPermalink) true }}
+  {{ if and (not $same) (not (in $pickedSlugs .RelPermalink)) }}
+    {{ $score := 0 }}
+
+    {{/* title overlap */}}
+    {{ $otherTokens := slice }}
+    {{ range split (lower (.Title | default "")) " " }}
+      {{ $t := replaceRE `[^a-z0-9]+` "" . }}
+      {{ if and (gt (len $t) 2) (not (in $stop $t)) }}
+        {{ $otherTokens = $otherTokens | append $t }}
+      {{ end }}
+    {{ end }}
+    {{ range $otherTokens }}
+      {{ if in $curTitleTokens . }}{{ $score = add $score 2 }}{{ end }}
+    {{ end }}
+
+    {{/* shared authors: exact full string, else last-name match */}}
+    {{ range (.Params.authors | default slice) }}
+      {{ $al := lower (string .) }}
+      {{ if in $curAuthors $al }}
+        {{ $score = add $score 1 }}
+      {{ else }}
+        {{ $parts := split (trim $al " ") " " }}
+        {{ if gt (len $parts) 0 }}
+          {{ $ln := index $parts (sub (len $parts) 1) }}
+          {{ $ln = replaceRE `\.` "" $ln }}
+          {{ $ln = replaceRE `[^a-z0-9]+` "" $ln }}
+          {{ if and (gt (len $ln) 1) (in $curAuthorSurnames $ln) }}{{ $score = add $score 1 }}{{ end }}
+        {{ end }}
+      {{ end }}
+    {{ end }}
+
+    {{/* shared tags / keywords */}}
+    {{ range (.Params.tags | default slice) }}
+      {{ if in $curTags (lower (string .)) }}{{ $score = add $score 2 }}{{ end }}
+    {{ end }}
+    {{ range (.Params.keywords | default slice) }}
+      {{ if in $curTags (lower (string .)) }}{{ $score = add $score 2 }}{{ end }}
+    {{ end }}
+
+    {{ if ge $score $threshold }}
+      {{ $candidates = $candidates | append (dict "page" . "score" $score) }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+
+{{/* sort candidates by score desc, then year desc */}}
+{{ $sorted := sort $candidates "score" "desc" }}
+{{ $picked = $picked | append $sorted }}
+
+{{/* ---------- render ---------- */}}
+{{/* Title-level dedup: a single conceptual item (e.g. JudgeIt II) may have
+     both a /publication/ page and a /software/ page with identical titles.
+     RelPermalink-based dedup in the collection passes doesn't catch those,
+     so we do one more pass here keyed by a normalized title. */}}
+{{ $limit := 8 }}
+{{ $shown := 0 }}
+{{ $seenTitles := slice }}
+{{ if gt (len $picked) 0 }}
+<div class="gk-see-also">
+  <h3>See Also</h3>
+  <ul>
+    {{ range $picked }}
+      {{ if lt $shown $limit }}
+        {{ if index . "extUrl" }}
+          {{ $shown = add $shown 1 }}
+          {{ $ek := index . "extKind" | default "Link" }}
+          {{ $lbl := cond (eq $ek "Data") "Dataset" "Link" }}
+          <li>
+            <span class="gk-see-kind">[{{ $lbl }}]</span>
+            <a href="{{ index . "extUrl" }}" target="_blank" rel="noopener noreferrer">{{ index . "extTitle" }}</a>
+          </li>
+        {{ else if index . "page" }}
+          {{ $p := index . "page" }}
+          {{ $normTitle := lower (replaceRE `[^a-z0-9]+` "" ($p.Title | default "")) }}
+          {{ if in $seenTitles $normTitle }}
+            {{/* already shown under another section; skip duplicate */}}
+          {{ else }}
+          {{ $seenTitles = $seenTitles | append $normTitle }}
+          {{ $shown = add $shown 1 }}
+          {{ $sect := $p.Section }}
+          {{ $pt := $p.Params.publication_types | default slice }}
+          {{ $label := "" }}
+          {{/* Type label precedence: we look at publication_types before the
+               section because a single file under /publication/ can actually
+               be a book, software, patent, or dataset — the section only
+               tells us where Hugo filed it, not what the reader should see.
+               For /talk/ and /software/ the section is authoritative. */}}
+          {{ if eq $sect "talk" }}{{ $label = "Presentation" }}
+          {{ else if eq $sect "software" }}{{ $label = "Software" }}
+          {{ else if in $pt "software" }}{{ $label = "Software" }}
+          {{ else if or (in $pt "book") (in $pt "book_chapter") (in $pt "chapter") }}{{ $label = "Book" }}
+          {{ else if in $pt "patent" }}{{ $label = "Patent" }}
+          {{ else if in $pt "court_brief" }}{{ $label = "Court Brief" }}
+          {{ else if in $pt "data" }}{{ $label = "Dataset" }}
+          {{ else if in $pt "presentation" }}{{ $label = "Presentation" }}
+          {{ else }}{{ $label = "Paper" }}{{ end }}
+          <li>
+            <span class="gk-see-kind">[{{ $label }}]</span>
+            <a href="{{ $p.RelPermalink }}">{{ $p.Title }}</a>
+            <span class="gk-see-year">({{ $p.Date.Format "2006" }})</span>
+          </li>
+          {{ end }}
+        {{ end }}
+      {{ end }}
+    {{ end }}
+  </ul>
+</div>
+{{ end }}

@@ -1,0 +1,80 @@
+{
+  "methods": [
+    {
+      "title": "Experimental Methods",
+      "description": "Innovations in experimental design, including conjoint experiments, indirect manipulations, and repeated-treatment designs.",
+      "subcategories": [
+        {
+          "title": "Eye Tracking in Experiments",
+          "papers": [
+            {"slug": "attention-and-political-choice-eye-tracking", "section": "publication"},
+            {"slug": "eye-tracking-decision-making-conjoint-experiments", "section": "publication"},
+            {"slug": "eye-tracking-gender-biased-information-acquisition", "section": "publication"},
+            {"slug": "eye-tracking-heterogeneous-treatment-effects-conjoint", "section": "publication"},
+            {"slug": "attention-distribution-issue-salience", "section": "publication"}
+          ]
+        },
+        {
+          "title": "Conjoint Analysis",
+          "papers": [
+            {"slug": "odd-profiles-conjoint-experimental-design", "section": "publication"},
+            {"slug": "eye-tracking-decision-making-conjoint-experiments", "section": "publication"},
+            {"slug": "predicting-measurement-error-bias-conjoint", "section": "publication"},
+            {"slug": "eye-tracking-heterogeneous-treatment-effects-conjoint", "section": "publication"}
+          ]
+        },
+        {
+          "title": "Causal Inference & Research Design",
+          "papers": [
+            {"slug": "excludability-research-design-indirect-manipulations", "section": "publication"},
+            {"slug": "excludability-psychological-experiments", "section": "publication"},
+            {"slug": "special-issue-innovations-experimental-methods", "section": "publication"},
+            {"slug": "repeated-treatments-affective-polarization-democratic-norms", "section": "publication"}
+          ]
+        }
+      ]
+    }
+  ],
+  "applications": [
+    {
+      "title": "Voter Behavior & Political Psychology",
+      "description": "How voters process information, form preferences, and make decisions, with emphasis on affective polarization and identity.",
+      "subcategories": [
+        {
+          "title": "Affective Polarization",
+          "papers": [
+            {"slug": "affective-polarization-misinformation-belief", "section": "publication"},
+            {"slug": "affective-polarization-democratic-norms-restraint", "section": "publication"},
+            {"slug": "repeated-treatments-affective-polarization-democratic-norms", "section": "publication"},
+            {"slug": "measurement-affective-polarization-problems-solution", "section": "publication"}
+          ]
+        },
+        {
+          "title": "Voter Decision-Making",
+          "papers": [
+            {"slug": "voter-preferences-policy-identity", "section": "publication"},
+            {"slug": "issues-or-identity-cognitive-foundations", "section": "publication"},
+            {"slug": "citizens-capacity-prospective-issue-voting", "section": "publication"},
+            {"slug": "calculus-of-voting-campaigns-elections", "section": "publication"}
+          ]
+        },
+        {
+          "title": "Gender & Identity in Politics",
+          "papers": [
+            {"slug": "eye-tracking-gender-biased-information-acquisition", "section": "publication"},
+            {"slug": "vice-presidential-candidates-race-gender", "section": "publication"},
+            {"slug": "leadership-sexism-measure-candidate-choice", "section": "publication"}
+          ]
+        },
+        {
+          "title": "Democratic Norms & Institutions",
+          "papers": [
+            {"slug": "affective-polarization-democratic-norms-restraint", "section": "publication"},
+            {"slug": "repeated-treatments-affective-polarization-democratic-norms", "section": "publication"},
+            {"slug": "predicting-anti-institutionalism-congress-tweets", "section": "publication"}
+          ]
+        }
+      ]
+    }
+  ]
+}

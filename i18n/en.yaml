@@ -1,0 +1,11 @@
+- id: btn_pdf
+  translation: Article
+
+- id: btn_source
+  translation: "Publisher's Version"
+
+- id: btn_abstract
+  translation: View Summary
+
+- id: btn_preprint
+  translation: Download PDF

@@ -1,0 +1,102 @@
+{{ define "main" }}
+{{/* ── Hero Section ── */}}
+<section class="mx-auto max-w-5xl px-6 pt-8 pb-12">
+  <div class="flex flex-col md:flex-row items-center md:items-start gap-10">
+    {{/* Bio photo */}}
+    <div class="shrink-0">
+      <img
+        src="{{ "images/libby-jenke.jpg" | relURL }}"
+        alt="Libby Jenke"
+        class="w-48 h-48 md:w-56 md:h-56 rounded-full object-cover shadow-lg ring-4 ring-white dark:ring-gray-800"
+        loading="eager"
+      >
+    </div>
+
+    {{/* Intro text */}}
+    <div class="text-center md:text-left">
+      <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 dark:text-white">
+        Libby Jenke
+      </h1>
+      <p class="mt-3 text-xl text-gray-600 dark:text-gray-300">
+        Assistant Professor of Political Science
+      </p>
+      <p class="text-lg text-gray-500 dark:text-gray-400">
+        University of Houston
+      </p>
+
+      <p class="mt-5 text-base text-gray-700 dark:text-gray-300 max-w-xl leading-relaxed">
+        {{ .Content }}
+      </p>
+
+      {{/* Links */}}
+      <div class="mt-6 flex flex-wrap justify-center md:justify-start gap-3">
+        {{ with .Params.cv_pdf }}
+        <a href="{{ . | relURL }}" class="inline-flex items-center gap-2 rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow hover:bg-primary-700 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          C.V. (PDF)
+        </a>
+        {{ end }}
+        {{ with .Params.email }}
+        <a href="mailto:{{ . }}" class="inline-flex items-center gap-2 rounded-md border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          Email
+        </a>
+        {{ end }}
+        {{ with .Params.github }}
+        <a href="https://github.com/{{ . }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-md border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          GitHub
+        </a>
+        {{ end }}
+        {{ with .Params.google_scholar }}
+        <a href="{{ . }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-md border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M5.242 13.769L0 9.5 12 0l12 9.5-5.242 4.269C17.548 11.249 14.978 9.5 12 9.5c-2.977 0-5.548 1.748-6.758 4.269zM12 10a7 7 0 100 14 7 7 0 000-14z"/></svg>
+          Google Scholar
+        </a>
+        {{ end }}
+      </div>
+    </div>
+  </div>
+</section>
+
+{{/* ── Research Areas Section ── */}}
+<section id="research-areas" class="bg-gray-50 dark:bg-gray-900 py-16">
+  <div class="mx-auto max-w-5xl px-6">
+    <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white mb-8">Research Areas</h2>
+    {{ $ra := site.Data.research_areas }}
+    {{ if $ra }}
+      {{ range $areaKey := slice "methods" "applications" }}
+        {{ $areas := index $ra $areaKey | default slice }}
+        {{ range $area := $areas }}
+          <div class="mb-10">
+            <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">{{ $area.title }}</h3>
+            {{ range $sub := ($area.subcategories | default slice) }}
+              <div class="mb-4">
+                <h4 class="text-base font-medium text-gray-600 dark:text-gray-400 mb-2">{{ $sub.title }}</h4>
+                {{ with $sub.papers }}
+                <ul class="space-y-1">
+                  {{ range . }}
+                    {{ $p := site.GetPage (printf "/%s/%s" .section .slug) }}
+                    {{ with $p }}
+                    <li>
+                      <a href="{{ .RelPermalink }}" class="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 hover:underline">{{ .Title }}</a>
+                      <span class="text-sm text-gray-500">({{ .Date.Format "2006" }})</span>
+                    </li>
+                    {{ end }}
+                  {{ end }}
+                </ul>
+                {{ end }}
+              </div>
+            {{ end }}
+          </div>
+        {{ end }}
+      {{ end }}
+    {{ else }}
+      {{/* Fallback: list sections by tag if no research_areas.json */}}
+      {{ range .Pages }}
+        {{ .Render "summary" }}
+      {{ end }}
+    {{ end }}
+  </div>
+</section>
+{{ end }}
